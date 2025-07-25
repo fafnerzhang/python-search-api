@@ -1,161 +1,174 @@
-# Python Search API
+# Python Search API 🔍
 
-基於FastAPI的DuckDuckGo搜尋API服務，使用DDGS 9.4.3庫實現。
+[![Tests](https://github.com/fafnerzhang/python-search-api/workflows/Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions)
+[![Code Quality](https://github.com/fafnerzhang/python-search-api/workflows/Code%20Quality/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-green.svg)](https://fastapi.tiangolo.com)
+[![uv](https://img.shields.io/badge/uv-managed-orange.svg)](https://github.com/astral-sh/uv)
+[![Coverage](https://img.shields.io/badge/coverage-91%25-brightgreen.svg)](#testing)
 
-## 功能特色
+A high-performance FastAPI-based search service using DuckDuckGo Search (DDGS) with authentication support.
 
-- 🔍 **多種搜尋類型**: 網頁搜尋、圖片搜尋、新聞搜尋
-- 🚀 **高效能**: 基於FastAPI和異步處理
-- 🔒 **安全認證**: 支援Bearer Token認證
-- 🌐 **CORS支援**: 跨域請求支援
-- 📚 **完整文檔**: 自動生成的API文檔
-- 🧪 **測試覆蓋**: 完整的pytest測試套件
-- 🏗️ **模組化架構**: 清晰的代碼結構
+## ✨ Features
 
-## 專案結構
+- 🔍 **Multiple Search Types**: Web search, image search, news search
+- 🚀 **High Performance**: Built with FastAPI and async/await
+- � **Secure Authentication**: Optional Bearer Token authentication
+- 🌐 **CORS Support**: Cross-origin request support
+- 📚 **Complete Documentation**: Auto-generated API documentation
+- 🧪 **Test Coverage**: Comprehensive pytest test suite (91% coverage)
+- 🏗️ **Modular Architecture**: Clean and maintainable code structure
+
+## 📁 Project Structure
 
 ```
 python-search-api/
-├── src/                          # 主要原始碼
-│   ├── api/                      # API路由
+├── src/                          # Main source code
+│   ├── api/                      # API routes
 │   │   ├── __init__.py
-│   │   └── search.py            # 搜尋相關端點
-│   ├── core/                     # 核心配置
+│   │   └── search.py            # Search endpoints
+│   ├── core/                     # Core configuration
 │   │   ├── __init__.py
-│   │   ├── config.py            # 應用程式配置
-│   │   └── logging.py           # 日誌配置
-│   ├── models/                   # Pydantic模型
+│   │   ├── config.py            # Application configuration
+│   │   └── logging.py           # Logging configuration
+│   ├── models/                   # Pydantic models
 │   │   ├── __init__.py
-│   │   ├── requests.py          # 請求模型
-│   │   └── responses.py         # 回應模型
-│   ├── services/                 # 業務邏輯服務
+│   │   ├── requests.py          # Request models
+│   │   └── responses.py         # Response models
+│   ├── services/                 # Business logic services
 │   │   ├── __init__.py
-│   │   ├── auth_service.py      # 認證服務
-│   │   └── ddgs_service.py      # DDGS搜尋服務
+│   │   ├── auth_service.py      # Authentication service
+│   │   └── ddgs_service.py      # DDGS search service
 │   ├── __init__.py
-│   └── app.py                    # FastAPI應用程式
-├── tests/                        # 測試代碼
+│   └── app.py                    # FastAPI application
+├── tests/                        # Test code
 │   ├── __init__.py
-│   ├── conftest.py              # 測試配置
-│   ├── test_api.py              # API測試
-│   ├── test_models.py           # 模型測試
-│   ├── test_services.py         # 服務測試
-│   └── test_integration.py      # 整合測試
-├── main.py                       # 舊版入口點
-├── main_new.py                   # 新版入口點
-├── requirements.txt              # Python依賴
-├── pyproject.toml               # 專案配置
-├── pytest.ini                   # Pytest配置
-├── Makefile                      # Make命令
-├── test.sh                       # 測試腳本
-├── quick_test.sh                # 快速測試腳本
-├── dev.sh                        # 開發啟動腳本
-├── start.sh                      # 生產啟動腳本
-├── .env.example                  # 環境變數範例
-├── .gitignore                    # Git忽略文件
-└── README.md                     # 專案說明
+│   ├── conftest.py              # Test configuration
+│   ├── test_api.py              # API tests
+│   ├── test_models.py           # Model tests
+│   ├── test_services.py         # Service tests
+│   └── test_integration.py      # Integration tests
+├── scripts/                      # Utility scripts
+│   ├── dev.sh                   # Development startup
+│   ├── start.sh                 # Production startup
+│   ├── test.sh                  # Test runner
+│   ├── quick_test.sh            # Quick test runner
+│   └── setup.sh                 # Environment setup
+├── main.py                       # Application entry point
+├── requirements.txt              # Python dependencies
+├── pyproject.toml               # Project configuration
+├── pytest.ini                   # Pytest configuration
+├── Makefile                      # Make commands
+├── .env.example                  # Environment variables example
+├── .gitignore                    # Git ignore file
+└── README.md                     # Project documentation
 ```
 
-## 快速開始
+## 🚀 Quick Start
 
-### 1. 環境需求
+### Prerequisites
 
 - Python 3.9+
-- UV包管理器
+- [uv](https://github.com/astral-sh/uv) package manager
 
-### 2. 安裝依賴
+### Installation
 
 ```bash
-# 使用Make
+# Clone the repository
+git clone https://github.com/fafnerzhang/python-search-api.git
+cd python-search-api
+
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies
 make install
-
-# 或手動安裝
+# or manually
 uv sync
-uv add --group dev pytest pytest-asyncio pytest-mock coverage httpx flake8 black mypy
 ```
 
-### 3. 環境配置
+### Configuration
 
 ```bash
+# Copy environment file
 cp .env.example .env
-# 編輯.env文件設定API_TOKEN（可選）
+# Edit .env to set your API_TOKEN (optional)
 ```
 
-### 4. 啟動服務
+### Start the Service
 
 ```bash
-# 開發模式（新架構）
-make dev-new
-
-# 或手動啟動
-PYTHONPATH=src uv run --with fastapi --with "uvicorn[standard]" --with ddgs --with python-dotenv uvicorn src.app:app --host 0.0.0.0 --port 8999 --reload
-
-# 舊版本（向後兼容）
+# Development mode
 make dev
+# or
+./scripts/dev.sh
+
+# Production mode
+make start
+# or
+./scripts/start.sh
 ```
 
-### 5. API文檔
+### API Documentation
 
-服務啟動後，訪問以下URL查看API文檔：
+After starting the service, visit:
 
 - **Swagger UI**: http://localhost:8999/docs
 - **ReDoc**: http://localhost:8999/redoc
 - **OpenAPI Schema**: http://localhost:8999/openapi.json
 
-## 測試
+## 🧪 Testing
 
-### 完整測試套件
+### Full Test Suite
 
 ```bash
-# 運行所有測試
+# Run all tests
 make test
-
-# 或使用腳本
-./test.sh
+# or
+./scripts/test.sh
 ```
 
-### 快速測試
+### Quick Tests
 
 ```bash
-# 運行快速測試
+# Run quick tests (models + services)
 make test-quick
-
-# 或使用腳本
-./quick_test.sh
+# or
+./scripts/quick_test.sh
 ```
 
-### 特定測試類型
+### Specific Test Categories
 
 ```bash
-# 單元測試
+# Unit tests
 make test-unit
 
-# API測試
+# API tests
 make test-api
 
-# 整合測試
+# Integration tests
 make test-integration
 
-# 覆蓋率報告
+# Coverage report
 make coverage
 ```
 
-### 代碼品質
+### Code Quality
 
 ```bash
-# 代碼檢查
+# Linting
 make lint
 
-# 代碼格式化
+# Code formatting
 make format
 
-# 類型檢查
+# Type checking
 make type-check
 ```
 
-## API端點
+## 📚 API Endpoints
 
-### 網頁搜尋
+### Web Search
 
 **POST** `/search`
 ```json
@@ -169,7 +182,7 @@ make type-check
 
 **GET** `/search?q=FastAPI&max_results=10`
 
-### 圖片搜尋
+### Image Search
 
 **POST** `/search/images`
 ```json
@@ -180,7 +193,7 @@ make type-check
 }
 ```
 
-### 新聞搜尋
+### News Search
 
 **POST** `/search/news`
 ```json
@@ -191,9 +204,9 @@ make type-check
 }
 ```
 
-## 認證
+## 🔐 Authentication
 
-API支援可選的Bearer Token認證：
+The API supports optional Bearer Token authentication:
 
 ```bash
 curl -H "Authorization: Bearer YOUR_TOKEN" \
@@ -202,66 +215,118 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
      -d '{"query": "test"}'
 ```
 
-## 開發
+## 🛠️ Development
 
-### 專案架構說明
+### Project Architecture
 
-- **src/core/**: 核心配置和共用工具
-- **src/models/**: Pydantic數據模型
-- **src/services/**: 業務邏輯和外部服務整合
-- **src/api/**: FastAPI路由和端點
-- **tests/**: 完整的測試套件
+- **src/core/**: Core configuration and shared utilities
+- **src/models/**: Pydantic data models
+- **src/services/**: Business logic and external service integration
+- **src/api/**: FastAPI routes and endpoints
+- **tests/**: Comprehensive test suite
 
-### 添加新功能
+### Adding New Features
 
-1. 在適當的模組中添加功能
-2. 編寫對應的測試
-3. 更新API文檔
-4. 運行測試確保功能正常
+1. Add functionality in the appropriate module
+2. Write corresponding tests
+3. Update API documentation
+4. Run tests to ensure functionality works
 
-### 測試策略
+### Testing Strategy
 
-- **單元測試**: 測試個別功能和模型
-- **API測試**: 測試HTTP端點
-- **整合測試**: 測試完整的工作流程
-- **Mock測試**: 模擬外部依賴（DDGS）
+- **Unit Tests**: Test individual functions and models
+- **API Tests**: Test HTTP endpoints
+- **Integration Tests**: Test complete workflows
+- **Mock Tests**: Mock external dependencies (DDGS)
 
-## 環境變數
+## ⚙️ Environment Variables
 
 ```bash
-# 可選設定
-API_TOKEN=your_secret_token    # API認證token
-HOST=0.0.0.0                   # 服務器主機
-PORT=8999                      # 服務器端口
-DEBUG=true                     # 除錯模式
+# Optional configuration
+API_TOKEN=your_secret_token    # API authentication token
+HOST=0.0.0.0                   # Server host
+PORT=8999                      # Server port
+DEBUG=true                     # Debug mode
+LOG_LEVEL=info                 # Logging level
+
+# DDGS Configuration
+DEFAULT_REGION=wt-wt           # Default search region
+DEFAULT_SAFESEARCH=moderate    # Default safesearch level
+DEFAULT_MAX_RESULTS=10         # Default max results
+MAX_ALLOWED_RESULTS=100        # Maximum allowed results
+
+# CORS Configuration
+ALLOWED_ORIGINS=*              # Allowed origins
+ALLOWED_METHODS=*              # Allowed methods
+ALLOWED_HEADERS=*              # Allowed headers
 ```
 
-## 故障排除
+## 🚀 Production Deployment
 
-### 常見問題
+### Using Docker
 
-1. **DDGS連接錯誤**: 檢查網路連接
-2. **依賴安裝失敗**: 確保Python版本>=3.9
-3. **測試失敗**: 檢查是否安裝了測試依賴
+```dockerfile
+FROM python:3.11-slim
 
-### 日誌查看
+WORKDIR /app
+COPY . .
+
+RUN pip install uv
+RUN uv pip install --system -r requirements.txt
+
+EXPOSE 8999
+CMD ["python", "main.py"]
+```
+
+### Direct Deployment
 
 ```bash
-# 檢查應用程式日誌
+# Install dependencies
+uv pip install -r requirements.txt
+
+# Start production server
+make start
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **DDGS Connection Error**: Check network connection
+2. **Dependency Installation Failed**: Ensure Python version >= 3.9
+3. **Tests Failing**: Check if test dependencies are installed
+
+### Viewing Logs
+
+```bash
+# Check application logs
 tail -f uvicorn.log
 
-# 除錯模式啟動
-DEBUG=true make dev-new
+# Start in debug mode
+DEBUG=true make dev
 ```
 
-## 貢獻
+## 🤝 Contributing
 
-1. Fork專案
-2. 創建功能分支
-3. 添加測試
-4. 確保所有測試通過
-5. 提交Pull Request
+1. Fork the project
+2. Create a feature branch: `git checkout -b feature-name`
+3. Add tests for your changes
+4. Ensure all tests pass: `make test`
+5. Format code: `make format`
+6. Commit your changes: `git commit -am 'Add feature'`
+7. Push to the branch: `git push origin feature-name`
+8. Submit a pull request
 
-## 許可證
+## 📄 License
 
-MIT License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Links
+
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [DuckDuckGo Search](https://github.com/deedy5/duckduckgo_search)
+- [uv Package Manager](https://github.com/astral-sh/uv)
+
+## 📞 Support
+
+If you have any questions or run into issues, please [open an issue](https://github.com/fafnerzhang/python-search-api/issues) on GitHub.

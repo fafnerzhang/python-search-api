@@ -1,0 +1,88 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        uv sync --group dev
+
+    - name: Run linting
+      run: |
+        uv run --group dev flake8 src/ tests/ --max-line-length=88 --ignore=E203,W503
+
+    - name: Run type checking
+      run: |
+        uv run --group dev mypy src/
+
+    - name: Run tests with coverage
+      run: |
+        PYTHONPATH=src uv run --group dev pytest --cov=src --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-api-integration:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python 3.11
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: |
+        uv sync --group dev
+
+    - name: Start API server
+      run: |
+        uv run python main.py &
+        sleep 10
+
+    - name: Test API endpoints
+      run: |
+        # Test health endpoint
+        curl -f http://localhost:8999/health
+        
+        # Test root endpoint
+        curl -f http://localhost:8999/
+        
+        # Test search endpoint
+        curl -f "http://localhost:8999/search?q=python&max_results=2"
+
+    - name: Run integration tests
+      run: |
+        PYTHONPATH=src uv run --group dev pytest tests/test_integration.py -v
