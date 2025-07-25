@@ -55,8 +55,8 @@ async def search_web(
             results=search_results,
             total_results=len(search_results),
             timestamp=datetime.now().isoformat(),
-            region=request.region,
-            safesearch=request.safesearch,
+            region=request.region or "wt-wt",
+            safesearch=request.safesearch or "moderate",
             time_limit=request.time_limit,
         )
 
@@ -128,7 +128,7 @@ async def search_images(
             results=image_results,
             total_results=len(image_results),
             timestamp=datetime.now().isoformat(),
-            region=request.region,
+            region=request.region or "wt-wt",
         )
 
     except Exception as e:
@@ -172,7 +172,7 @@ async def search_news(
             results=news_results,
             total_results=len(news_results),
             timestamp=datetime.now().isoformat(),
-            region=request.region,
+            region=request.region or "wt-wt",
         )
 
     except Exception as e:

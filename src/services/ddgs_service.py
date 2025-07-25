@@ -3,7 +3,7 @@ DuckDuckGo搜尋服務
 """
 
 import asyncio
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Callable
 from src.core.logging import logger
 
 try:
@@ -18,7 +18,7 @@ class DDGSService:
 
     @staticmethod
     async def safe_ddgs_operation(
-        operation_func, *args, **kwargs
+        operation_func: Callable[..., List[Dict[str, Any]]], *args, **kwargs
     ) -> List[Dict[str, Any]]:
         """
         安全執行DDGS操作，處理可能的異常
@@ -48,7 +48,7 @@ class DDGSService:
         query: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: str = None,
+        timelimit: Optional[str] = None,
         max_results: int = 10,
     ) -> List[Dict[str, Any]]:
         """
@@ -90,11 +90,11 @@ class DDGSService:
         query: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        size: str = None,
-        color: str = None,
-        type_image: str = None,
-        layout: str = None,
-        license_image: str = None,
+        size: Optional[str] = None,
+        color: Optional[str] = None,
+        type_image: Optional[str] = None,
+        layout: Optional[str] = None,
+        license_image: Optional[str] = None,
         max_results: int = 10,
     ) -> List[Dict[str, Any]]:
         """
@@ -120,7 +120,7 @@ class DDGSService:
             with DDGS() as ddgs:
                 results = list(
                     ddgs.images(
-                        keywords=query,
+                        query,  # 作為位置參數
                         region=region,
                         safesearch=safesearch,
                         size=size,
@@ -146,7 +146,7 @@ class DDGSService:
         query: str,
         region: str = "wt-wt",
         safesearch: str = "moderate",
-        timelimit: str = None,
+        timelimit: Optional[str] = None,
         max_results: int = 10,
     ) -> List[Dict[str, Any]]:
         """
@@ -168,7 +168,7 @@ class DDGSService:
             with DDGS() as ddgs:
                 results = list(
                     ddgs.news(
-                        keywords=query,
+                        query,  # 作為位置參數
                         region=region,
                         safesearch=safesearch,
                         timelimit=timelimit,
