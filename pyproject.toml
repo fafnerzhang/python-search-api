@@ -1,0 +1,80 @@
+[project]
+name = "python-search-api"
+version = "0.1.0"
+description = "FastAPI application with DuckDuckGo search using DDGS"
+authors = [
+    {name = "Developer", email = "developer@example.com"}
+]
+dependencies = [
+    "fastapi>=0.115.6",
+    "uvicorn[standard]>=0.32.1",
+    "ddgs>=9.4.3",
+    "pydantic>=2.10.5",
+    "python-jose[cryptography]>=3.3.0",
+    "python-multipart>=0.0.20",
+    "requests>=2.32.3",
+    "python-dotenv>=1.0.1",
+    "httpx>=0.28.1",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "MIT"}
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-mock>=3.10.0",
+    "coverage>=7.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "httpx>=0.28.1",
+]
+
+test = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-mock>=3.10.0",
+    "coverage>=7.0.0",
+    "httpx>=0.28.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "tests/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
