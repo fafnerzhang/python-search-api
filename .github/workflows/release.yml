@@ -3,12 +3,16 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  create-release:
+  test:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -25,47 +29,97 @@ jobs:
       run: |
         uv sync --group dev
 
-    - name: Run tests
+    - name: Run full test suite
       run: |
-        PYTHONPATH=src uv run --group dev pytest --cov=src --cov-report=term-missing
+        PYTHONPATH=src uv run --group dev coverage run -m pytest tests/
+        uv run --group dev coverage report -m
 
-    - name: Build package
+    - name: Run linting
       run: |
-        uv build
+        uv run --group dev flake8 src/ tests/ --max-line-length=88 --ignore=E203,W503
 
-    - name: Create Release
-      id: create_release
+    - name: Run type checking
+      run: |
+        uv run --group dev mypy src/
+
+  build-and-release:
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract version from tag
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=tag
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          type=raw,value=latest
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Simple changelog generation
+        if [ -f "CHANGELOG.md" ]; then
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          cat CHANGELOG.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        else
+          echo "CHANGELOG=Release ${{ steps.version.outputs.VERSION }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create GitHub Release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ steps.version.outputs.VERSION }}
+        release_name: Release ${{ steps.version.outputs.VERSION }}
         body: |
-          ## What's Changed
+          ## Release ${{ steps.version.outputs.VERSION }}
           
-          ### Features
-          - FastAPI search service with DuckDuckGo integration
-          - Comprehensive test suite with high coverage
-          - Modern Python tooling with uv
+          ### Docker Images
           
-          ### Technical Details
-          - Python 3.9+ support
-          - Async/await architecture
-          - Optional API authentication
-          - CORS support
-          - Automatic API documentation
+          - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}`
+          - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest`
           
-          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v1.0.0...${{ github.ref_name }}
+          ### Changes
+          
+          ${{ steps.changelog.outputs.CHANGELOG }}
+          
         draft: false
         prerelease: false
-
-    - name: Upload Release Assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/
-        asset_name: python-search-api-dist
-        asset_content_type: application/zip

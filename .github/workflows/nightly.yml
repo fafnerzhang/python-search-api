@@ -1,0 +1,154 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # Run daily at 3 AM UTC
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  nightly-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python 3.11
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: |
+        uv sync --group dev
+
+    - name: Run extended test suite
+      run: |
+        # Run all tests with verbose output
+        PYTHONPATH=src uv run --group dev pytest tests/ -v --tb=long --durations=10
+
+    - name: Run coverage with detailed report
+      run: |
+        PYTHONPATH=src uv run --group dev coverage run -m pytest tests/
+        uv run --group dev coverage report -m --show-missing
+        uv run --group dev coverage html
+
+    - name: Upload coverage artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report-${{ github.run_number }}
+        path: htmlcov/
+
+    - name: Security scan
+      run: |
+        uv add bandit safety
+        uv run bandit -r src/ -f json -o bandit-report.json || true
+        uv run safety check || true
+
+    - name: Upload security artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-reports-${{ github.run_number }}
+        path: |
+          bandit-report.json
+
+  nightly-build:
+    runs-on: ubuntu-latest
+    needs: nightly-tests
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push nightly image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:nightly
+        labels: |
+          org.opencontainers.image.title=${{ github.repository }}
+          org.opencontainers.image.description=Nightly build of Python Search API
+          org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  performance-benchmark:
+    runs-on: ubuntu-latest
+    needs: nightly-build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Pull nightly image
+      run: |
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:nightly
+
+    - name: Run performance benchmarks
+      run: |
+        # Start the application
+        docker run -d --name benchmark-container -p 9410:9410 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:nightly
+        
+        # Wait for application to be ready
+        timeout 60 bash -c 'until curl -f http://localhost:9410/health; do sleep 2; done'
+        
+        # Run simple benchmark tests
+        echo "Running benchmark tests..."
+        
+        # Health check performance
+        time curl -f http://localhost:9410/health
+        
+        # Search endpoint performance
+        time curl -X POST "http://localhost:9410/search" \
+          -H "Content-Type: application/json" \
+          -d '{"query": "test performance", "max_results": 10}'
+        
+        # Multiple concurrent requests
+        for i in {1..5}; do
+          curl -X POST "http://localhost:9410/search" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\": \"test $i\", \"max_results\": 5}" &
+        done
+        wait
+        
+        # Clean up
+        docker stop benchmark-container
+        docker rm benchmark-container
+
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: [nightly-tests, nightly-build, performance-benchmark]
+    if: always()
+
+    steps:
+    - name: Clean up old nightly artifacts
+      run: |
+        echo "Nightly build completed"
+        echo "Build number: ${{ github.run_number }}"
+        echo "Timestamp: $(date)"

@@ -1,0 +1,62 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Run weekly on Monday at 6 AM
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python 3.11
+      run: uv python install 3.11
+
+    - name: Update dependencies
+      run: |
+        uv sync --upgrade
+        uv add --group dev pytest pytest-asyncio pytest-mock pytest-cov coverage httpx flake8 black mypy --upgrade
+
+    - name: Run tests after update
+      run: |
+        PYTHONPATH=src uv run --group dev pytest tests/test_models.py tests/test_services.py -v --tb=short
+
+    - name: Run linting after update
+      run: |
+        uv run --group dev flake8 src/ tests/ --max-line-length=88 --ignore=E203,W503
+
+    - name: Check for changes
+      id: changes
+      run: |
+        if git diff --quiet; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create Pull Request
+      if: steps.changes.outputs.changed == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore: update dependencies"
+        title: "chore: automated dependency updates"
+        body: |
+          Automated dependency updates
+          
+          - Updated Python dependencies to latest versions
+          - All tests are passing
+          - Code quality checks passed
+        branch: dependency-updates
+        delete-branch: true

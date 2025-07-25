@@ -1,11 +1,15 @@
 # Python Search API 🔍
 
-[![Tests](https://github.com/fafnerzhang/python-search-api/workflows/Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions)
-[![Code Quality](https://github.com/fafnerzhang/python-search-api/workflows/Code%20Quality/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions)
+[![Tests](https://github.com/fafnerzhang/python-search-api/workflows/Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/tests.yml)
+[![Code Quality](https://github.com/fafnerzhang/python-search-api/workflows/Code%20Quality/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/code-quality.yml)
+[![CI/CD](https://github.com/fafnerzhang/python-search-api/workflows/CI%2FCD/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/ci-cd.yml)
+[![Performance Tests](https://github.com/fafnerzhang/python-search-api/workflows/Performance%20Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/performance.yml)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-green.svg)](https://fastapi.tiangolo.com)
 [![uv](https://img.shields.io/badge/uv-managed-orange.svg)](https://github.com/astral-sh/uv)
-[![Coverage](https://img.shields.io/badge/coverage-91%25-brightgreen.svg)](#testing)
+[![codecov](https://codecov.io/gh/fafnerzhang/python-search-api/branch/main/graph/badge.svg)](https://codecov.io/gh/fafnerzhang/python-search-api)
+[![Docker](https://img.shields.io/badge/Docker-Available-2496ED.svg)](https://github.com/fafnerzhang/python-search-api/packages)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A high-performance FastAPI-based search service using DuckDuckGo Search (DDGS) with authentication support.
 
@@ -113,9 +117,20 @@ make start
 
 After starting the service, visit:
 
-- **Swagger UI**: http://localhost:8999/docs
-- **ReDoc**: http://localhost:8999/redoc
-- **OpenAPI Schema**: http://localhost:8999/openapi.json
+- **Swagger UI**: http://localhost:9410/docs
+- **ReDoc**: http://localhost:9410/redoc
+- **OpenAPI Schema**: http://localhost:9410/openapi.json
+
+## 📊 Workflow Status
+
+| Workflow | Status | Description |
+|----------|--------|-------------|
+| Tests | [![Tests](https://github.com/fafnerzhang/python-search-api/workflows/Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/tests.yml) | Comprehensive test suite |
+| Code Quality | [![Code Quality](https://github.com/fafnerzhang/python-search-api/workflows/Code%20Quality/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/code-quality.yml) | Linting, formatting, type checking |
+| Unit Tests | [![Unit Tests](https://github.com/fafnerzhang/python-search-api/workflows/Unit%20Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/unit-tests.yml) | Focused unit testing |
+| Performance | [![Performance Tests](https://github.com/fafnerzhang/python-search-api/workflows/Performance%20Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/performance.yml) | Performance benchmarks |
+| CI/CD | [![CI/CD](https://github.com/fafnerzhang/python-search-api/workflows/CI%2FCD/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/ci-cd.yml) | Continuous integration |
+| Nightly | [![Nightly Build](https://github.com/fafnerzhang/python-search-api/workflows/Nightly%20Build/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/nightly.yml) | Daily builds and scans |
 
 ## 🧪 Testing
 
@@ -245,7 +260,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 # Optional configuration
 API_TOKEN=your_secret_token    # API authentication token
 HOST=0.0.0.0                   # Server host
-PORT=8999                      # Server port
+PORT=9410                      # Server port
 DEBUG=true                     # Debug mode
 LOG_LEVEL=info                 # Logging level
 
@@ -274,7 +289,7 @@ COPY . .
 RUN pip install uv
 RUN uv pip install --system -r requirements.txt
 
-EXPOSE 8999
+EXPOSE 9410
 CMD ["python", "main.py"]
 ```
 
@@ -316,6 +331,38 @@ DEBUG=true make dev
 6. Commit your changes: `git commit -am 'Add feature'`
 7. Push to the branch: `git push origin feature-name`
 8. Submit a pull request
+
+## 🔄 CI/CD Workflows
+
+This project uses comprehensive GitHub Actions workflows for continuous integration and deployment:
+
+### Core Workflows
+- **Tests** (`tests.yml`): Runs comprehensive test suite across multiple Python versions
+- **Code Quality** (`code-quality.yml`): Enforces code standards with linting, formatting, and type checking
+- **Unit Tests** (`unit-tests.yml`): Focused unit testing with detailed coverage reporting
+
+### Specialized Workflows
+- **Performance Tests** (`performance.yml`): Automated performance benchmarking
+- **CI/CD** (`ci-cd.yml`): Continuous integration and deployment pipeline
+- **Release** (`release.yml`): Automated release management with Docker image publishing
+- **Nightly Build** (`nightly.yml`): Daily builds with extended testing and security scans
+
+### Maintenance Workflows
+- **Dependency Updates** (`dependency-updates.yml`): Automated dependency updates
+- **Cleanup & Maintenance** (`cleanup.yml`): Repository maintenance and cleanup tasks
+
+### Workflow Features
+- ✅ Multi-version Python testing (3.9, 3.10, 3.11, 3.12)
+- 📊 Comprehensive test coverage reporting via Codecov
+- 🐳 Docker image building and publishing to GitHub Container Registry
+- 🔒 Security scanning with Bandit and Safety
+- 📈 Performance benchmarking and monitoring
+- 🔄 Automated dependency updates with PR creation
+- 🧹 Automated cleanup of old artifacts and containers
+
+### Coverage Reporting
+
+Test coverage is automatically tracked and reported via [Codecov](https://codecov.io/gh/fafnerzhang/python-search-api). The coverage badge in the README updates automatically with each test run.
 
 ## 📄 License
 
