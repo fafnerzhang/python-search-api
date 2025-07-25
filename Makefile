@@ -1,6 +1,6 @@
 # Makefile for Python Search API
 
-.PHONY: help setup install test test-quick test-unit test-api test-integration coverage lint format clean dev start
+.PHONY: help setup install test test-quick test-unit test-api test-integration coverage lint format clean dev start docker-build docker-run docker-stop
 
 help: ## Show help information
 	@echo "Available commands:"
@@ -18,9 +18,6 @@ test: ## Run all tests
 
 test-quick: ## Run quick tests
 	./scripts/quick_test.sh
-
-test-unit: ## Run unit tests
-	PYTHONPATH=src uv run --group dev pytest tests/test_models.py tests/test_services.py -v --cov-fail-under=85
 
 test-api: ## Run API tests
 	PYTHONPATH=src uv run --group dev pytest tests/test_api.py -v --cov-fail-under=90
@@ -56,3 +53,25 @@ dev: ## Start in development mode
 
 start: ## Start in production mode
 	./scripts/start.sh
+
+# Docker commands
+GIT_COMMIT_SHA := $(shell git rev-parse --short HEAD)
+IMAGE_NAME := fafnerzhang/python-search-api:$(GIT_COMMIT_SHA)
+
+docker-build: ## Build Docker image with git commit sha tag
+	docker build -t $(IMAGE_NAME) .
+
+docker-run: ## Run Docker container with auto-restart and health check
+	docker run -d \
+	  --name python-search-api \
+	  --restart=unless-stopped \
+	  -p 9410:9410 \
+	  --health-cmd="curl -f http://localhost:9410/health || exit 1" \
+	  --health-interval=30s \
+	  --health-timeout=5s \
+	  --health-retries=3 \
+	  $(IMAGE_NAME)
+
+docker-stop: ## Stop and remove Docker container
+	docker stop python-search-api || true
+	docker rm python-search-api || true
