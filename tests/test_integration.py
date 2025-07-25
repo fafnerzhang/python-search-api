@@ -2,10 +2,10 @@
 整合測試
 """
 
-import pytest
-from fastapi.testclient import TestClient
-import sys
 import os
+import sys
+
+from fastapi.testclient import TestClient
 
 # 添加src目錄到Python路徑
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))

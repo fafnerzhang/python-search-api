@@ -2,11 +2,11 @@
 服務層測試
 """
 
-import pytest
-import asyncio
-from unittest.mock import patch, MagicMock
-import sys
 import os
+import sys
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 # 添加src目錄到Python路徑
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))

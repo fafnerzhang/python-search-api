@@ -2,7 +2,6 @@
 API端點測試
 """
 
-import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 

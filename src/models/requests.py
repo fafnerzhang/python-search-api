@@ -37,7 +37,7 @@ class ImageSearchRequest(BaseModel):
     )
     color: Optional[str] = Field(
         None,
-        description="Image color: 'color', 'Monochrome', 'Red', 'Orange', 'Yellow', etc.",
+        description="Image color: 'color', 'Monochrome', 'Red', 'Orange', etc.",
     )
     type_image: Optional[str] = Field(
         None, description="Image type: 'photo', 'clipart', 'gif', 'transparent', 'line'"
