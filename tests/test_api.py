@@ -92,7 +92,7 @@ class TestSearchEndpoints:
         response = client.post(
             "/search",
             json={"query": "test", "max_results": 200},  # Exceeds limit
-            headers=auth_headers
+            headers=auth_headers,
         )
         assert response.status_code == 422
 
@@ -138,9 +138,7 @@ class TestImageSearchEndpoints:
         mock_ddgs.return_value.__enter__.return_value = mock_ddgs_instance
 
         response = client.post(
-            "/search/images",
-            json=sample_image_search_data,
-            headers=auth_headers
+            "/search/images", json=sample_image_search_data, headers=auth_headers
         )
         assert response.status_code == 200
 
@@ -176,9 +174,7 @@ class TestNewsSearchEndpoints:
         mock_ddgs.return_value.__enter__.return_value = mock_ddgs_instance
 
         response = client.post(
-            "/search/news",
-            json=sample_news_search_data,
-            headers=auth_headers
+            "/search/news", json=sample_news_search_data, headers=auth_headers
         )
         assert response.status_code == 200
 

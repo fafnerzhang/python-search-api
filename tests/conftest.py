@@ -43,8 +43,9 @@ def app():
 def auth_app():
     """Create a test FastAPI application with real authentication for auth tests."""
     from src.app import create_app
+
     # Mock the API_TOKEN setting for tests
-    with patch('src.core.config.settings.API_TOKEN', 'test-token'):
+    with patch("src.core.config.settings.API_TOKEN", "test-token"):
         return create_app()
 
 

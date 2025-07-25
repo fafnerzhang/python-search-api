@@ -228,9 +228,7 @@ class TestDDGSService:
         mock_ddgs.side_effect = requests.ConnectionError("Connection failed")
 
         with pytest.raises(Exception) as exc_info:
-            await DDGSService.safe_ddgs_operation(
-                DDGSService.text_search, "test query"
-            )
+            await DDGSService.safe_ddgs_operation(DDGSService.text_search, "test query")
 
         assert "Search operation failed" in str(exc_info.value)
 
@@ -243,9 +241,7 @@ class TestDDGSService:
         mock_ddgs.side_effect = Exception("Test error")
 
         with pytest.raises(Exception):
-            await DDGSService.safe_ddgs_operation(
-                DDGSService.text_search, "test query"
-            )
+            await DDGSService.safe_ddgs_operation(DDGSService.text_search, "test query")
 
         # 驗證錯誤日誌被記錄
         assert mock_logger.error.call_count >= 1
@@ -312,7 +308,7 @@ class TestDDGSService:
 class TestAuthService:
     """測試認證服務"""
 
-    @patch('src.services.auth_service.settings.API_TOKEN', None)
+    @patch("src.services.auth_service.settings.API_TOKEN", None)
     def test_verify_token_no_api_token_configured(self):
         """測試未配置API_TOKEN時的錯誤"""
         credentials = HTTPAuthorizationCredentials(
@@ -325,7 +321,7 @@ class TestAuthService:
         assert exc_info.value.status_code == 500
         assert "API_TOKEN not configured" in exc_info.value.detail
 
-    @patch('src.services.auth_service.settings.API_TOKEN', 'valid-token')
+    @patch("src.services.auth_service.settings.API_TOKEN", "valid-token")
     def test_verify_token_invalid_token(self):
         """測試無效token時的錯誤"""
         credentials = HTTPAuthorizationCredentials(
@@ -338,7 +334,7 @@ class TestAuthService:
         assert exc_info.value.status_code == 401
         assert "Invalid authentication token" in exc_info.value.detail
 
-    @patch('src.services.auth_service.settings.API_TOKEN', 'valid-token')
+    @patch("src.services.auth_service.settings.API_TOKEN", "valid-token")
     def test_verify_token_valid_token(self):
         """測試有效token時的成功"""
         credentials = HTTPAuthorizationCredentials(

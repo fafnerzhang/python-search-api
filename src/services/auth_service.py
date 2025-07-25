@@ -30,7 +30,7 @@ def verify_token(
     if not settings.API_TOKEN:
         raise HTTPException(
             status_code=500,
-            detail="API_TOKEN not configured. Please set API_TOKEN environment variable."  # noqa: E501
+            detail="API_TOKEN not configured. Please set API_TOKEN environment variable.",  # noqa: E501
         )
 
     # 驗證token是否匹配
