@@ -24,19 +24,16 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd python-search-api
         make install
         uv add --group dev locust
 
     - name: Start API server
       run: |
-        cd python-search-api
         make start &
         sleep 10
 
     - name: Run performance tests
       run: |
-        cd python-search-api
         # Basic load test with locust
         uv run --group dev locust --headless --users 50 --spawn-rate 5 --run-time 2m --host http://localhost:9410 --locustfile tests/locustfile.py || true
 

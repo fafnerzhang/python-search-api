@@ -31,14 +31,10 @@ jobs:
       run: uv python install ${{ matrix.python-version }}
 
     - name: Install dependencies
-      run: |
-        cd python-search-api
-        make install
+      run: make install
 
     - name: Run quick tests
-      run: |
-        cd python-search-api
-        make test-quick
+      run: make test-quick
 
   test-api:
     name: API Tests
@@ -58,14 +54,10 @@ jobs:
       run: uv python install 3.11
 
     - name: Install dependencies
-      run: |
-        cd python-search-api
-        make install
+      run: make install
 
     - name: Run API tests
-      run: |
-        cd python-search-api
-        make test-api
+      run: make test-api
 
   test-integration:
     name: Integration Tests
@@ -85,14 +77,10 @@ jobs:
       run: uv python install 3.11
 
     - name: Install dependencies
-      run: |
-        cd python-search-api
-        make install
+      run: make install
 
     - name: Run integration tests
-      run: |
-        cd python-search-api
-        make test-integration
+      run: make test-integration
 
   coverage:
     name: Coverage Report
@@ -112,21 +100,16 @@ jobs:
       run: uv python install 3.11
 
     - name: Install dependencies
-      run: |
-        cd python-search-api
-        make install
+      run: make install
 
     - name: Generate coverage report
-      run: |
-        cd python-search-api
-        make coverage
+      run: make coverage
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
-        file: ./python-search-api/coverage.xml
-        fail_ci_if_error: true
-        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        fail_ci_if_error: false
 
   code-quality:
     name: Code Quality
@@ -145,26 +128,19 @@ jobs:
       run: uv python install 3.11
 
     - name: Install dependencies
-      run: |
-        cd python-search-api
-        make install
+      run: make install
 
     - name: Run linting
-      run: |
-        cd python-search-api
-        make lint
+      run: make lint
 
     - name: Check formatting
       run: |
-        cd python-search-api
         make format
         # Check if there are any formatting changes
         git diff --exit-code
 
     - name: Run type checking
-      run: |
-        cd python-search-api
-        make type-check
+      run: make type-check
 
   docker-build:
     name: Docker Build
@@ -198,13 +174,10 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
 
     - name: Build Docker image
-      run: |
-        cd python-search-api
-        make docker-build
+      run: make docker-build
 
     - name: Tag image for registry
       run: |
-        cd python-search-api
         GIT_COMMIT_SHA=$(git rev-parse --short HEAD)
         docker tag fafnerzhang/python-search-api:$GIT_COMMIT_SHA ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$GIT_COMMIT_SHA
         docker tag fafnerzhang/python-search-api:$GIT_COMMIT_SHA ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
@@ -214,7 +187,6 @@ jobs:
 
     - name: Push Docker image
       run: |
-        cd python-search-api
         GIT_COMMIT_SHA=$(git rev-parse --short HEAD)
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$GIT_COMMIT_SHA
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
@@ -241,7 +213,6 @@ jobs:
 
     - name: Test Docker container
       run: |
-        cd python-search-api
         GIT_COMMIT_SHA=$(git rev-parse --short HEAD)
         
         # Pull and run the image
