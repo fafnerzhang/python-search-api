@@ -75,3 +75,19 @@ docker-run: ## Run Docker container with auto-restart and health check
 docker-stop: ## Stop and remove Docker container
 	docker stop python-search-api || true
 	docker rm python-search-api || true
+
+test-docker-build: ## Build Docker image and test health endpoint
+	@echo "🐳 Building Docker image..."
+	docker build -t $(IMAGE_NAME) .
+	@echo "🚀 Starting test container..."
+	docker run -d --name test-container -p 9410:9410 -e API_TOKEN=test-token $(IMAGE_NAME)
+	@echo "⏳ Waiting for container to be ready..."
+	sleep 15
+	@echo "🔍 Testing health endpoint..."
+	curl -f http://localhost:9410/health || (echo "❌ Health check failed" && docker logs test-container && docker stop test-container && docker rm test-container && exit 1)
+	@echo "📋 Testing API docs endpoint..."
+	curl -f http://localhost:9410/docs || (echo "❌ Docs endpoint failed" && docker logs test-container && docker stop test-container && docker rm test-container && exit 1)
+	@echo "✅ Docker build and health tests passed!"
+	@echo "🧹 Cleaning up test container..."
+	docker stop test-container
+	docker rm test-container
