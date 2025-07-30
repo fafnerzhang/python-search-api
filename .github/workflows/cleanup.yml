@@ -68,20 +68,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv sync --group dev
+        make install
 
     - name: Clean temporary files
       run: |
-        # Remove Python cache files
-        find . -type d -name "__pycache__" -exec rm -rf {} + || true
-        find . -type f -name "*.pyc" -delete || true
-        find . -type f -name "*.pyo" -delete || true
-        
-        # Remove test artifacts
-        rm -rf .pytest_cache/ || true
-        rm -rf htmlcov/ || true
-        rm -rf .coverage || true
-        rm -rf coverage.xml || true
+        make clean
 
     - name: Run security audit
       run: |
@@ -127,7 +118,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv sync --group dev
+        make install
 
     - name: Check project health
       run: |
@@ -143,14 +134,14 @@ jobs:
           fi
         done
         
-        # Check code quality
-        echo "Running quick quality checks..."
-        uv run --group dev black --check src/ tests/ || echo "⚠️ Code formatting issues"
-        uv run --group dev flake8 src/ tests/ --max-line-length=88 --ignore=E203,W503 || echo "⚠️ Linting issues"
+        # Check code quality using Makefile
+        echo "Running quality checks..."
+        make format --dry-run || echo "⚠️ Code formatting issues"
+        make lint || echo "⚠️ Linting issues"
         
-        # Check test status
+        # Check test status using Makefile
         echo "Running quick tests..."
-        PYTHONPATH=src uv run --group dev pytest tests/test_models.py -v --tb=short || echo "⚠️ Test failures"
+        make test-quick || echo "⚠️ Test failures"
 
     - name: Repository statistics
       run: |

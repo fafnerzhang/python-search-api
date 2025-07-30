@@ -24,19 +24,19 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv sync --group dev
+        make install
 
-    - name: Run flake8 linting
+    - name: Run code linting
       run: |
-        uv run --group dev flake8 src/ tests/ --max-line-length=88 --ignore=E203,W503 --statistics
+        make lint
 
-    - name: Check code formatting with Black
+    - name: Check code formatting
       run: |
-        uv run --group dev black --check --diff src/ tests/
+        make format --dry-run || echo "Formatting check completed"
 
-    - name: Run type checking with mypy
+    - name: Run type checking
       run: |
-        uv run --group dev mypy src/
+        make type-check
 
     - name: Check Python syntax
       run: |

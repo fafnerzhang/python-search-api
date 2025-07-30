@@ -27,20 +27,23 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv sync --group dev
+        make install
 
     - name: Run full test suite
       run: |
-        PYTHONPATH=src uv run --group dev coverage run -m pytest tests/
-        uv run --group dev coverage report -m
+        make test
+
+    - name: Generate coverage report
+      run: |
+        make coverage
 
     - name: Run linting
       run: |
-        uv run --group dev flake8 src/ tests/ --max-line-length=88 --ignore=E203,W503
+        make lint
 
     - name: Run type checking
       run: |
-        uv run --group dev mypy src/
+        make type-check
 
   build-and-release:
     runs-on: ubuntu-latest

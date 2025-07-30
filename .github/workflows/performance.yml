@@ -26,11 +26,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv sync --group dev
+        make install
 
-    - name: Start application
+    - name: Start application in development mode
       run: |
-        PYTHONPATH=src uv run uvicorn src.app:app --host 0.0.0.0 --port 9410 &
+        make dev &
         APP_PID=$!
         echo "APP_PID=$APP_PID" >> $GITHUB_ENV
         sleep 10

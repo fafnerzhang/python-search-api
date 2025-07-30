@@ -26,15 +26,15 @@ jobs:
     - name: Update dependencies
       run: |
         uv sync --upgrade
-        uv add --group dev pytest pytest-asyncio pytest-mock pytest-cov coverage httpx flake8 black mypy --upgrade
+        make install
 
     - name: Run tests after update
       run: |
-        PYTHONPATH=src uv run --group dev pytest tests/test_models.py tests/test_services.py -v --tb=short
+        make test-quick
 
     - name: Run linting after update
       run: |
-        uv run --group dev flake8 src/ tests/ --max-line-length=88 --ignore=E203,W503
+        make lint
 
     - name: Check for changes
       id: changes

@@ -27,21 +27,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv sync --group dev
+        make install
 
-    - name: Run unit tests for models
+    - name: Run quick tests (models and services)
       run: |
-        PYTHONPATH=src uv run --group dev pytest tests/test_models.py -v --tb=short --cov=src.models --cov-report=xml:coverage-models.xml
-
-    - name: Run unit tests for services  
-      run: |
-        PYTHONPATH=src uv run --group dev pytest tests/test_services.py -v --tb=short --cov=src.services --cov-report=xml:coverage-services.xml
-
-    - name: Combine coverage reports
-      run: |
-        uv run --group dev coverage combine
-        uv run --group dev coverage xml -o coverage-unit.xml
-        uv run --group dev coverage report -m
+        make test-quick
 
     - name: Upload unit test coverage
       uses: codecov/codecov-action@v4
@@ -68,11 +58,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv sync --group dev
+        make install
 
-    - name: Run API tests with coverage threshold
+    - name: Run API tests
       run: |
-        PYTHONPATH=src uv run --group dev pytest tests/test_api.py -v --cov=src.api --cov-fail-under=90 --cov-report=xml:coverage-api.xml
+        make test-api
 
     - name: Upload API test coverage
       uses: codecov/codecov-action@v4
@@ -99,11 +89,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv sync --group dev
+        make install
 
-    - name: Run integration tests with coverage threshold
+    - name: Run integration tests
       run: |
-        PYTHONPATH=src uv run --group dev pytest tests/test_integration.py -v --cov=src --cov-fail-under=60 --cov-report=xml:coverage-integration.xml
+        make test-integration
 
     - name: Upload integration test coverage
       uses: codecov/codecov-action@v4

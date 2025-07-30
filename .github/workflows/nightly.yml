@@ -27,18 +27,15 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv sync --group dev
+        make install
 
     - name: Run extended test suite
       run: |
-        # Run all tests with verbose output
-        PYTHONPATH=src uv run --group dev pytest tests/ -v --tb=long --durations=10
+        make test
 
-    - name: Run coverage with detailed report
+    - name: Generate coverage report
       run: |
-        PYTHONPATH=src uv run --group dev coverage run -m pytest tests/
-        uv run --group dev coverage report -m --show-missing
-        uv run --group dev coverage html
+        make coverage
 
     - name: Upload coverage artifacts
       uses: actions/upload-artifact@v4
@@ -94,7 +91,7 @@ jobs:
           org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}
           org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           org.opencontainers.image.revision=${{ github.sha }}
-          org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+          org.opencontainers.image.created=${{ github.event.repository.updated_at }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -112,8 +109,8 @@ jobs:
 
     - name: Run performance benchmarks
       run: |
-        # Start the application
-        docker run -d --name benchmark-container -p 9410:9410 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:nightly
+        # Start the application using Docker
+        make docker-run
         
         # Wait for application to be ready
         timeout 60 bash -c 'until curl -f http://localhost:9410/health; do sleep 2; done'
@@ -138,8 +135,7 @@ jobs:
         wait
         
         # Clean up
-        docker stop benchmark-container
-        docker rm benchmark-container
+        make docker-stop
 
   cleanup:
     runs-on: ubuntu-latest
