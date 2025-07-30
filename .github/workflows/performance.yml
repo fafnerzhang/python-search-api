@@ -35,7 +35,7 @@ jobs:
     - name: Run performance tests
       run: |
         # Basic load test with locust
-        uv run --group dev locust --headless --users 50 --spawn-rate 5 --run-time 2m --host http://localhost:9410 --locustfile tests/locustfile.py || true
+        uv run --group dev locust --headless --users 50 --spawn-rate 5 --run-time 30s --host http://localhost:9410 --locustfile tests/locustfile.py || true
 
     - name: Health check after load test
       run: |

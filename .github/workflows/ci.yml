@@ -174,5 +174,3 @@ jobs:
 
     - name: Build and test Docker container
       run: make test-docker-build
-
-
