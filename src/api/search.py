@@ -65,28 +65,6 @@ async def search_web(
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 
-@router.get("/search", response_model=SearchResponse)
-async def search_web_get(
-    q: str = Query(..., description="Search query"),
-    region: str = Query("wt-wt", description="Region code"),
-    safesearch: str = Query("moderate", description="Safe search level"),
-    time_limit: Optional[str] = Query(None, description="Time limit"),
-    max_results: int = Query(10, ge=1, le=100, description="Maximum results"),
-    token: Optional[str] = Depends(verify_token),
-):
-    """
-    網頁搜尋端點 (GET)
-    """
-    request = SearchRequest(
-        query=q,
-        region=region,
-        safesearch=safesearch,
-        time_limit=time_limit,
-        max_results=max_results,
-    )
-    return await search_web(request, token)
-
-
 @router.post("/search/images", response_model=ImageSearchResponse)
 async def search_images(
     request: ImageSearchRequest, token: Optional[str] = Depends(verify_token)
