@@ -62,10 +62,21 @@ docker-build: ## Build Docker image with git commit sha tag
 	docker build -t $(IMAGE_NAME) .
 
 docker-run: ## Run Docker container with auto-restart and health check
+	@if [ ! -f .env ]; then \
+		echo "❌ .env file not found! Creating from .env.example..."; \
+		if [ -f .env.example ]; then \
+			cp .env.example .env; \
+			echo "✅ Created .env from .env.example. Please review and update values if needed."; \
+		else \
+			echo "❌ .env.example not found! Please create .env file manually."; \
+			exit 1; \
+		fi; \
+	fi
 	docker run -d \
 	  --name python-search-api \
 	  --restart=unless-stopped \
 	  -p 9410:9410 \
+	  --env-file .env \
 	  --health-cmd="curl -f http://localhost:9410/health || exit 1" \
 	  --health-interval=30s \
 	  --health-timeout=5s \
@@ -77,10 +88,20 @@ docker-stop: ## Stop and remove Docker container
 	docker rm python-search-api || true
 
 test-docker-build: ## Build Docker image and test health endpoint
+	@if [ ! -f .env ]; then \
+		echo "❌ .env file not found! Creating from .env.example..."; \
+		if [ -f .env.example ]; then \
+			cp .env.example .env; \
+			echo "✅ Created .env from .env.example. Please review and update values if needed."; \
+		else \
+			echo "❌ .env.example not found! Please create .env file manually."; \
+			exit 1; \
+		fi; \
+	fi
 	@echo "🐳 Building Docker image..."
 	docker build -t $(IMAGE_NAME) .
 	@echo "🚀 Starting test container..."
-	docker run -d --name test-container -p 9410:9410 -e API_TOKEN=test-token $(IMAGE_NAME)
+	docker run -d --name test-container -p 9410:9410 --env-file .env -e API_TOKEN=test-token $(IMAGE_NAME)
 	@echo "⏳ Waiting for container to be ready..."
 	sleep 15
 	@echo "🔍 Testing health endpoint..."

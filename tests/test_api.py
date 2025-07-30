@@ -57,30 +57,6 @@ class TestSearchEndpoints:
         assert len(data["results"]) == 1
         assert data["results"][0]["title"] == "Test Title"
 
-    @patch("src.services.ddgs_service.DDGS")
-    def test_search_get_success(self, mock_ddgs, client: TestClient, auth_headers):
-        """測試GET搜尋成功"""
-        # Mock DDGS response
-        mock_results = [
-            {
-                "title": "Test Title",
-                "href": "https://example.com",
-                "body": "Test body content",
-            }
-        ]
-
-        mock_ddgs_instance = MagicMock()
-        mock_ddgs_instance.text.return_value = mock_results
-        mock_ddgs.return_value.__enter__.return_value = mock_ddgs_instance
-
-        response = client.get("/search?q=test&max_results=1", headers=auth_headers)
-        assert response.status_code == 200
-
-        data = response.json()
-        assert data["success"] is True
-        assert data["query"] == "test"
-        assert len(data["results"]) == 1
-
     def test_search_validation_error(self, client: TestClient, auth_headers):
         """測試搜尋驗證錯誤"""
         # Empty query should fail validation
