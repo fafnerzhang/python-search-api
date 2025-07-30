@@ -2,7 +2,7 @@
 搜尋API路由
 """
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 from typing import Optional
 
