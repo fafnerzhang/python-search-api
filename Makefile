@@ -1,6 +1,6 @@
 # Makefile for Python Search API
 
-.PHONY: help setup install test test-quick test-unit test-api test-integration coverage lint format clean dev start
+.PHONY: help setup install test test-quick test-unit test-api test-integration coverage lint format clean dev start docker-build docker-run docker-stop
 
 help: ## Show help information
 	@echo "Available commands:"
@@ -18,9 +18,6 @@ test: ## Run all tests
 
 test-quick: ## Run quick tests
 	./scripts/quick_test.sh
-
-test-unit: ## Run unit tests
-	PYTHONPATH=src uv run --group dev pytest tests/test_models.py tests/test_services.py -v --cov-fail-under=85
 
 test-api: ## Run API tests
 	PYTHONPATH=src uv run --group dev pytest tests/test_api.py -v --cov-fail-under=90
@@ -56,3 +53,41 @@ dev: ## Start in development mode
 
 start: ## Start in production mode
 	./scripts/start.sh
+
+# Docker commands
+GIT_COMMIT_SHA := $(shell git rev-parse --short HEAD)
+IMAGE_NAME := fafnerzhang/python-search-api:$(GIT_COMMIT_SHA)
+
+docker-build: ## Build Docker image with git commit sha tag
+	docker build -t $(IMAGE_NAME) .
+
+docker-run: ## Run Docker container with auto-restart and health check
+	docker run -d \
+	  --name python-search-api \
+	  --restart=unless-stopped \
+	  -p 9410:9410 \
+	  --health-cmd="curl -f http://localhost:9410/health || exit 1" \
+	  --health-interval=30s \
+	  --health-timeout=5s \
+	  --health-retries=3 \
+	  $(IMAGE_NAME)
+
+docker-stop: ## Stop and remove Docker container
+	docker stop python-search-api || true
+	docker rm python-search-api || true
+
+test-docker-build: ## Build Docker image and test health endpoint
+	@echo "🐳 Building Docker image..."
+	docker build -t $(IMAGE_NAME) .
+	@echo "🚀 Starting test container..."
+	docker run -d --name test-container -p 9410:9410 -e API_TOKEN=test-token $(IMAGE_NAME)
+	@echo "⏳ Waiting for container to be ready..."
+	sleep 15
+	@echo "🔍 Testing health endpoint..."
+	curl -f http://localhost:9410/health || (echo "❌ Health check failed" && docker logs test-container && docker stop test-container && docker rm test-container && exit 1)
+	@echo "📋 Testing API docs endpoint..."
+	curl -f http://localhost:9410/docs || (echo "❌ Docs endpoint failed" && docker logs test-container && docker stop test-container && docker rm test-container && exit 1)
+	@echo "✅ Docker build and health tests passed!"
+	@echo "🧹 Cleaning up test container..."
+	docker stop test-container
+	docker rm test-container

@@ -13,8 +13,6 @@ from fastapi.testclient import TestClient
 # 添加src目錄到Python路徑
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from src.app import create_app
-
 
 @pytest.fixture(scope="session")
 def event_loop() -> Generator:
@@ -27,13 +25,54 @@ def event_loop() -> Generator:
 @pytest.fixture
 def app():
     """Create a test FastAPI application."""
-    return create_app()
+    from src.app import create_app
+    from src.services.auth_service import verify_token
+
+    app = create_app()
+
+    # Override the auth dependency for testing
+    def mock_verify_token():
+        return "test-token"
+
+    app.dependency_overrides[verify_token] = mock_verify_token
+    return app
+
+
+@pytest.fixture
+def auth_app():
+    """Create a test FastAPI application with real authentication for auth tests."""
+    from unittest.mock import patch
+    from src.app import create_app
+    from src.core.config import Settings
+
+    # Create a test settings instance with the token
+    test_settings = Settings()
+    test_settings.API_TOKEN = "test-token"
+
+    # Patch the settings in all relevant modules
+    with patch("src.core.config.settings", test_settings), patch(
+        "src.services.auth_service.settings", test_settings
+    ):
+        app = create_app()
+        yield app
+
+
+@pytest.fixture
+def auth_client(auth_app):
+    """Create a test client with real authentication."""
+    return TestClient(auth_app)
 
 
 @pytest.fixture
 def client(app):
     """Create a test client."""
     return TestClient(app)
+
+
+@pytest.fixture
+def auth_headers():
+    """Authentication headers for testing."""
+    return {"Authorization": "Bearer test-token"}
 
 
 @pytest.fixture

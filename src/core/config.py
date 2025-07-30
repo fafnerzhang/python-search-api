@@ -22,7 +22,7 @@ class Settings:
 
     # 服務器設定
     HOST: str = os.getenv("HOST", "0.0.0.0")
-    PORT: int = int(os.getenv("PORT", "8999"))
+    PORT: int = int(os.getenv("PORT", "9410"))
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
 
     # 認證設定

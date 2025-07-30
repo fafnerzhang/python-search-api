@@ -9,8 +9,7 @@ echo "⚡ Running quick tests..."
 # 確保在正確的目錄
 cd "$(dirname "$0")/.."
 
-# 運行快速測試（核心功能）
-PYTHONPATH=src uv run --with pytest --with pytest-asyncio --with pytest-mock --with httpx \
-    pytest tests/test_models.py tests/test_services.py -v --tb=short
+# 運行快速測試（核心功能）- 只測試models、services和core模塊
+PYTHONPATH=src uv run --group dev pytest tests/test_models.py tests/test_services.py -v --tb=short --override-ini="addopts=-ra -q --strict-markers --strict-config --cov=src.models --cov=src.services --cov=src.core --cov-report=term-missing --cov-fail-under=90"
 
 echo "✅ Quick tests completed!"

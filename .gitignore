@@ -57,6 +57,7 @@ logs/
 .pytest_cache/
 .coverage
 htmlcov/
+coverage.xml
 
 # MyPy
 .mypy_cache/

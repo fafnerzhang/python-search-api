@@ -32,7 +32,7 @@ uv run --group dev coverage html
 
 echo "🎯 Running specific test categories..."
 echo "- Unit tests:"
-PYTHONPATH=src uv run --group dev pytest tests/test_models.py tests/test_services.py -v
+PYTHONPATH=src uv run --group dev pytest tests/test_models.py tests/test_services.py -v --no-cov
 
 echo "- API tests:"
 PYTHONPATH=src uv run --group dev pytest tests/test_api.py -v
