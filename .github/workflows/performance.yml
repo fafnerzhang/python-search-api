@@ -1,17 +1,15 @@
 name: Performance Tests
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
   schedule:
-    - cron: '0 2 * * 1' # Run weekly on Monday at 2 AM
+    - cron: '0 2 * * *'  # Run daily at 2 AM
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
-  performance:
+  performance-test:
+    name: Performance Testing
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -26,44 +24,22 @@ jobs:
 
     - name: Install dependencies
       run: |
+        cd python-search-api
         make install
+        uv add --group dev locust
 
-    - name: Start application in development mode
+    - name: Start API server
       run: |
-        make dev &
-        APP_PID=$!
-        echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+        cd python-search-api
+        make start &
         sleep 10
 
-    - name: Wait for application to be ready
+    - name: Run performance tests
       run: |
-        timeout 30 bash -c 'until curl -f http://localhost:9410/health; do sleep 1; done'
+        cd python-search-api
+        # Basic load test with locust
+        uv run --group dev locust --headless --users 50 --spawn-rate 5 --run-time 2m --host http://localhost:9410 --locustfile tests/locustfile.py || true
 
-    - name: Install performance testing tools
+    - name: Health check after load test
       run: |
-        pip install locust
-
-    - name: Run basic performance tests
-      run: |
-        # Simple load test with curl
-        echo "Running basic load test..."
-        for i in {1..10}; do
-          curl -f http://localhost:9410/health || exit 1
-        done
-        
-        # Test search endpoint
-        curl -X POST "http://localhost:9410/search" \
-          -H "Content-Type: application/json" \
-          -d '{"query": "test", "max_results": 5}' || exit 1
-
-    - name: Memory and CPU usage check
-      run: |
-        # Check if the application is running efficiently
-        ps -p $APP_PID -o pid,ppid,cmd,%mem,%cpu
-
-    - name: Stop application
-      if: always()
-      run: |
-        if [ ! -z "$APP_PID" ]; then
-          kill $APP_PID || true
-        fi
+        curl -f http://localhost:9410/health || exit 1

@@ -1,8 +1,6 @@
 # Python Search API 🔍
 
-[![Tests](https://github.com/fafnerzhang/python-search-api/workflows/Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/tests.yml)
-[![Code Quality](https://github.com/fafnerzhang/python-search-api/workflows/Code%20Quality/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/code-quality.yml)
-[![CI/CD](https://github.com/fafnerzhang/python-search-api/workflows/CI%2FCD/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/ci-cd.yml)
+[![CI/CD Pipeline](https://github.com/fafnerzhang/python-search-api/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/ci.yml)
 [![Performance Tests](https://github.com/fafnerzhang/python-search-api/workflows/Performance%20Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/performance.yml)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-green.svg)](https://fastapi.tiangolo.com)
@@ -121,65 +119,111 @@ After starting the service, visit:
 - **ReDoc**: http://localhost:9410/redoc
 - **OpenAPI Schema**: http://localhost:9410/openapi.json
 
-## 📊 Workflow Status
+## 📊 CI/CD Pipeline & Testing
 
-| Workflow | Status | Description |
-|----------|--------|-------------|
-| Tests | [![Tests](https://github.com/fafnerzhang/python-search-api/workflows/Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/tests.yml) | Comprehensive test suite |
-| Code Quality | [![Code Quality](https://github.com/fafnerzhang/python-search-api/workflows/Code%20Quality/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/code-quality.yml) | Linting, formatting, type checking |
-| Unit Tests | [![Unit Tests](https://github.com/fafnerzhang/python-search-api/workflows/Unit%20Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/unit-tests.yml) | Focused unit testing |
-| Performance | [![Performance Tests](https://github.com/fafnerzhang/python-search-api/workflows/Performance%20Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/performance.yml) | Performance benchmarks |
-| CI/CD | [![CI/CD](https://github.com/fafnerzhang/python-search-api/workflows/CI%2FCD/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/ci-cd.yml) | Continuous integration |
-| Nightly | [![Nightly Build](https://github.com/fafnerzhang/python-search-api/workflows/Nightly%20Build/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/nightly.yml) | Daily builds and scans |
+This project uses a comprehensive GitHub Actions workflow that leverages all Makefile commands for automated testing, quality assurance, and deployment.
+
+### Workflow Overview
+
+Our CI/CD pipeline (`ci.yml`) includes the following stages:
+
+| Stage | Commands Used | Description |
+|-------|---------------|-------------|
+| **Quick Tests** | `make test-quick` | Fast unit tests across Python 3.9-3.12 |
+| **API Tests** | `make test-api` | Comprehensive API endpoint testing |
+| **Integration Tests** | `make test-integration` | End-to-end integration testing |
+| **Coverage Report** | `make coverage` | Generate and upload coverage reports |
+| **Code Quality** | `make lint`, `make format`, `make type-check` | Code quality enforcement |
+| **Docker Build** | `make docker-build` | Build Docker images with commit SHA tags |
+| **Docker Test** | `make docker-run` + health checks | Test containerized application |
+| **Deploy Staging** | Triggered on `develop` branch | Deploy to staging environment |
+| **Deploy Production** | Triggered on `main` branch | Deploy to production environment |
+
+### Performance Testing
+
+A separate workflow (`performance.yml`) runs daily performance tests to ensure optimal API performance.
+
+### Available Make Commands
+
+The following Makefile commands are used throughout the CI/CD pipeline:
+
+```bash
+# Testing commands
+make test-quick      # Quick unit tests
+make test-api        # API endpoint tests
+make test-integration # Integration tests
+make coverage        # Generate coverage reports
+
+# Code quality commands
+make lint            # Run code linting
+make format          # Format code with black
+make type-check      # Run mypy type checking
+
+# Docker commands
+make docker-build    # Build Docker image
+make docker-run      # Run Docker container
+make docker-stop     # Stop and remove container
+
+# Development commands
+make install         # Install dependencies
+make dev            # Start development server
+make start          # Start production server
+make clean          # Clean generated files
+```
 
 ## 🧪 Testing
+
+The testing strategy mirrors the CI/CD pipeline, using the same Makefile commands locally and in automation.
+
+### Local Testing (Same as CI)
+
+```bash
+# Install dependencies (same as CI)
+make install
+
+# Run the same tests as in CI pipeline
+make test-quick      # Quick tests (Python 3.9-3.12 in CI)
+make test-api        # API tests (90% coverage requirement)
+make test-integration # Integration tests (60% coverage requirement)
+make coverage        # Generate coverage report + upload in CI
+
+# Code quality checks (same as CI)
+make lint           # Linting with flake8
+make format         # Format with black (CI checks for changes)
+make type-check     # Type checking with mypy
+```
 
 ### Full Test Suite
 
 ```bash
-# Run all tests
+# Run all tests (combines multiple Makefile commands)
 make test
 # or
 ./scripts/test.sh
 ```
 
-### Quick Tests
+### Docker Testing (Same as CI)
 
 ```bash
-# Run quick tests (models + services)
-make test-quick
-# or
-./scripts/quick_test.sh
+# Build and test Docker container (same as CI)
+make docker-build
+make docker-run
+
+# Test health endpoint (same as CI validation)
+curl -f http://localhost:9410/health
+
+# Cleanup (same as CI)
+make docker-stop
 ```
 
-### Specific Test Categories
+### Test Categories
 
-```bash
-# Unit tests
-make test-unit
-
-# API tests
-make test-api
-
-# Integration tests
-make test-integration
-
-# Coverage report
-make coverage
-```
-
-### Code Quality
-
-```bash
-# Linting
-make lint
-
-# Code formatting
-make format
-
-# Type checking
-make type-check
-```
+| Test Type | Command | Coverage Requirement | CI Stage |
+|-----------|---------|---------------------|----------|
+| Quick Tests | `make test-quick` | N/A | Parallel across Python versions |
+| API Tests | `make test-api` | 90% | After quick tests |
+| Integration Tests | `make test-integration` | 60% | After quick tests |
+| Full Coverage | `make coverage` | Combined report | After API + Integration |
 
 ## 📚 API Endpoints
 
@@ -276,32 +320,40 @@ ALLOWED_METHODS=*              # Allowed methods
 ALLOWED_HEADERS=*              # Allowed headers
 ```
 
-## 🚀 Production Deployment
+## � Docker Usage
 
-### Using Docker
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-COPY . .
-
-RUN pip install uv
-RUN uv pip install --system -r requirements.txt
-
-EXPOSE 9410
-CMD ["python", "main.py"]
-```
-
-### Direct Deployment
+### Using Make Commands
 
 ```bash
-# Install dependencies
-uv pip install -r requirements.txt
+# Build Docker image (uses git commit SHA as tag)
+make docker-build
 
-# Start production server
-make start
+# Run Docker container with health checks and auto-restart
+make docker-run
+
+# Stop and remove Docker container
+make docker-stop
 ```
+
+### Manual Docker Commands
+
+```bash
+# Build image
+docker build -t python-search-api .
+
+# Run container
+docker run -d --name python-search-api -p 9410:9410 python-search-api
+
+# Check logs
+docker logs python-search-api
+```
+
+### Docker Hub Images
+
+The CI/CD pipeline automatically builds and pushes Docker images to GitHub Container Registry with the following tags:
+- `ghcr.io/fafnerzhang/python-search-api:latest` (main branch)
+- `ghcr.io/fafnerzhang/python-search-api:develop` (develop branch)
+- `ghcr.io/fafnerzhang/python-search-api:<commit-sha>` (all commits)
 
 ## 🐛 Troubleshooting
 
@@ -323,46 +375,120 @@ DEBUG=true make dev
 
 ## 🤝 Contributing
 
+### Setting Up Repository for CI/CD
+
+Before the CI/CD pipeline can run successfully, ensure the following repository secrets are configured:
+
+1. **GitHub Secrets** (Repository Settings → Secrets and variables → Actions):
+   ```
+   CODECOV_TOKEN        # Optional: For coverage reporting
+   ```
+
+2. **GitHub Container Registry**: 
+   - The workflow automatically uses `GITHUB_TOKEN` for pushing Docker images
+   - No additional setup required for GHCR access
+
+### Development Workflow
+
 1. Fork the project
 2. Create a feature branch: `git checkout -b feature-name`
-3. Add tests for your changes
-4. Ensure all tests pass: `make test`
-5. Format code: `make format`
+3. Make your changes and add tests
+4. Run local testing (same commands as CI):
+   ```bash
+   make install          # Install dependencies
+   make test-quick       # Quick tests
+   make test-api         # API tests
+   make test-integration # Integration tests
+   make coverage         # Coverage report
+   make lint            # Code linting
+   make format          # Code formatting
+   make type-check      # Type checking
+   ```
+5. Ensure Docker build works: `make docker-build && make docker-run`
 6. Commit your changes: `git commit -am 'Add feature'`
 7. Push to the branch: `git push origin feature-name`
 8. Submit a pull request
 
-## 🔄 CI/CD Workflows
+### Pull Request Guidelines
 
-This project uses comprehensive GitHub Actions workflows for continuous integration and deployment:
+- All CI checks must pass (same tests run locally)
+- Code coverage should not decrease
+- Follow existing code style (enforced by `make format`)
+- Include tests for new functionality
+- Update documentation if needed
 
-### Core Workflows
-- **Tests** (`tests.yml`): Runs comprehensive test suite across multiple Python versions
-- **Code Quality** (`code-quality.yml`): Enforces code standards with linting, formatting, and type checking
-- **Unit Tests** (`unit-tests.yml`): Focused unit testing with detailed coverage reporting
+The CI/CD pipeline will automatically:
+- Run all tests across Python versions 3.9-3.12
+- Check code quality and formatting
+- Build and test Docker images
+- Deploy to staging (on `develop` branch)
+- Deploy to production (on `main` branch)
 
-### Specialized Workflows
-- **Performance Tests** (`performance.yml`): Automated performance benchmarking
-- **CI/CD** (`ci-cd.yml`): Continuous integration and deployment pipeline
-- **Release** (`release.yml`): Automated release management with Docker image publishing
-- **Nightly Build** (`nightly.yml`): Daily builds with extended testing and security scans
+## 🔄 CI/CD Architecture
 
-### Maintenance Workflows
-- **Dependency Updates** (`dependency-updates.yml`): Automated dependency updates
-- **Cleanup & Maintenance** (`cleanup.yml`): Repository maintenance and cleanup tasks
+This project implements a modern CI/CD pipeline using GitHub Actions that leverages the comprehensive Makefile commands:
 
-### Workflow Features
-- ✅ Multi-version Python testing (3.9, 3.10, 3.11, 3.12)
-- 📊 Comprehensive test coverage reporting via Codecov
-- 🐳 Docker image building and publishing to GitHub Container Registry
-- 🔒 Security scanning with Bandit and Safety
-- 📈 Performance benchmarking and monitoring
-- 🔄 Automated dependency updates with PR creation
-- 🧹 Automated cleanup of old artifacts and containers
+### Pipeline Stages
 
-### Coverage Reporting
+1. **Parallel Testing Phase**
+   - Quick tests across multiple Python versions (3.9-3.12)
+   - API endpoint testing with 90% coverage requirement
+   - Integration testing with 60% coverage requirement
 
-Test coverage is automatically tracked and reported via [Codecov](https://codecov.io/gh/fafnerzhang/python-search-api). The coverage badge in the README updates automatically with each test run.
+2. **Quality Assurance Phase**
+   - Code linting with flake8
+   - Code formatting validation with black
+   - Type checking with mypy
+
+3. **Coverage & Reporting Phase**
+   - Comprehensive coverage report generation
+   - Automatic upload to Codecov
+   - Coverage thresholds enforcement
+
+4. **Containerization Phase**
+   - Docker image building with git commit SHA tagging
+   - Multi-registry publishing (GitHub Container Registry)
+   - Container health testing and validation
+
+5. **Deployment Phase**
+   - Staging deployment on `develop` branch pushes
+   - Production deployment on `main` branch pushes
+   - Environment-specific configuration management
+
+### Key Features
+
+- ✅ **Multi-version Testing**: Ensures compatibility across Python 3.9-3.12
+- � **Container-first Approach**: Docker images built and tested automatically
+- 📊 **Coverage Tracking**: Integrated with Codecov for coverage monitoring
+- � **Quality Gates**: Enforced linting, formatting, and type checking
+- 🚀 **Automated Deployment**: Environment-specific deployments
+- ⚡ **Performance Monitoring**: Scheduled performance testing
+- 🏷️ **Smart Tagging**: Git SHA-based container tagging
+
+### Makefile Integration
+
+The CI/CD pipeline extensively uses Makefile commands to ensure consistency between local development and automated testing:
+
+```bash
+# Core testing commands used in CI
+make install         # Dependency installation
+make test-quick      # Fast unit testing
+make test-api        # API endpoint testing
+make test-integration # Integration testing
+make coverage        # Coverage reporting
+
+# Quality assurance commands
+make lint           # Code linting
+make format         # Code formatting
+make type-check     # Type checking
+
+# Docker operations
+make docker-build   # Container building
+make docker-run     # Container deployment
+make docker-stop    # Container cleanup
+```
+
+This approach ensures that developers can run the exact same commands locally as those used in the CI/CD pipeline, providing consistency and reliability across all environments.
 
 ## 📄 License
 
