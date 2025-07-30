@@ -43,10 +43,27 @@ def app():
 def auth_app():
     """Create a test FastAPI application with real authentication for auth tests."""
     from src.app import create_app
+    import os
 
-    # Mock the API_TOKEN setting for tests
-    with patch("src.core.config.settings.API_TOKEN", "test-token"):
-        return create_app()
+    # Set the API_TOKEN environment variable for tests
+    original_token = os.environ.get("API_TOKEN")
+    os.environ["API_TOKEN"] = "test-token"
+
+    try:
+        # Reload settings to pick up the new environment variable
+        from src.core.config import Settings
+        test_settings = Settings()
+
+        # Patch the settings module with our test settings
+        with patch("src.core.config.settings", test_settings):
+            app = create_app()
+            yield app
+    finally:
+        # Restore original environment
+        if original_token is not None:
+            os.environ["API_TOKEN"] = original_token
+        elif "API_TOKEN" in os.environ:
+            del os.environ["API_TOKEN"]
 
 
 @pytest.fixture
