@@ -1,7 +1,7 @@
 # Python Search API 🔍
 
-[![CI/CD Pipeline](https://github.com/fafnerzhang/python-search-api/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/ci.yml)
-[![Performance Tests](https://github.com/fafnerzhang/python-search-api/workflows/Performance%20Tests/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/performance.yml)
+[![CI Pipeline](https://github.com/fafnerzhang/python-search-api/actions/workflows/ci.yml/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/ci.yml)
+[![Performance Tests](https://github.com/fafnerzhang/python-search-api/actions/workflows/performance.yml/badge.svg)](https://github.com/fafnerzhang/python-search-api/actions/workflows/performance.yml)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-green.svg)](https://fastapi.tiangolo.com)
 [![uv](https://img.shields.io/badge/uv-managed-orange.svg)](https://github.com/astral-sh/uv)
@@ -46,6 +46,7 @@ python-search-api/
 ├── tests/                        # Test code
 │   ├── __init__.py
 │   ├── conftest.py              # Test configuration
+│   ├── locustfile.py            # Performance testing with Locust
 │   ├── test_api.py              # API tests
 │   ├── test_models.py           # Model tests
 │   ├── test_services.py         # Service tests
@@ -119,13 +120,13 @@ After starting the service, visit:
 - **ReDoc**: http://localhost:9410/redoc
 - **OpenAPI Schema**: http://localhost:9410/openapi.json
 
-## 📊 CI/CD Pipeline & Testing
+## 📊 CI Pipeline & Testing
 
-This project uses a comprehensive GitHub Actions workflow that leverages all Makefile commands for automated testing, quality assurance, and deployment.
+This project uses a comprehensive GitHub Actions workflow that leverages all Makefile commands for automated testing and quality assurance.
 
 ### Workflow Overview
 
-Our CI/CD pipeline (`ci.yml`) includes the following stages:
+Our CI pipeline (`ci.yml`) includes the following stages:
 
 | Stage | Commands Used | Description |
 |-------|---------------|-------------|
@@ -135,13 +136,11 @@ Our CI/CD pipeline (`ci.yml`) includes the following stages:
 | **Coverage Report** | `make coverage` | Generate and upload coverage reports |
 | **Code Quality** | `make lint`, `make format`, `make type-check` | Code quality enforcement |
 | **Docker Build** | `make docker-build` | Build Docker images with commit SHA tags |
-| **Docker Test** | `make docker-run` + health checks | Test containerized application |
-| **Deploy Staging** | Triggered on `develop` branch | Deploy to staging environment |
-| **Deploy Production** | Triggered on `main` branch | Deploy to production environment |
+| **Docker Test** | `make test-docker-build` | Test containerized application with health checks |
 
 ### Performance Testing
 
-A separate workflow (`performance.yml`) runs daily performance tests to ensure optimal API performance.
+A separate workflow (`performance.yml`) runs daily performance tests using Locust to ensure optimal API performance.
 
 ### Available Make Commands
 
@@ -163,6 +162,7 @@ make type-check      # Run mypy type checking
 make docker-build    # Build Docker image
 make docker-run      # Run Docker container
 make docker-stop     # Stop and remove container
+make test-docker-build # Build and test Docker container with health checks
 
 # Development commands
 make install         # Install dependencies
@@ -207,12 +207,15 @@ make test
 ```bash
 # Build and test Docker container (same as CI)
 make docker-build
+make test-docker-build
+
+# Or run container manually for development
 make docker-run
 
 # Test health endpoint (same as CI validation)
 curl -f http://localhost:9410/health
 
-# Cleanup (same as CI)
+# Cleanup
 make docker-stop
 ```
 
@@ -269,7 +272,7 @@ The API supports optional Bearer Token authentication:
 
 ```bash
 curl -H "Authorization: Bearer YOUR_TOKEN" \
-     -X POST "http://localhost:8999/search" \
+     -X POST "http://localhost:9410/search" \
      -H "Content-Type: application/json" \
      -d '{"query": "test"}'
 ```
@@ -350,10 +353,11 @@ docker logs python-search-api
 
 ### Docker Hub Images
 
-The CI/CD pipeline automatically builds and pushes Docker images to GitHub Container Registry with the following tags:
-- `ghcr.io/fafnerzhang/python-search-api:latest` (main branch)
-- `ghcr.io/fafnerzhang/python-search-api:develop` (develop branch)
-- `ghcr.io/fafnerzhang/python-search-api:<commit-sha>` (all commits)
+Docker images are built automatically by the CI pipeline with the following tags:
+- Local development: `fafnerzhang/python-search-api:<commit-sha>` (built locally)
+- Images are tagged with git commit SHA for versioning
+
+**Note**: Automatic registry publishing is not currently configured in the CI pipeline.
 
 ## 🐛 Troubleshooting
 
@@ -375,18 +379,18 @@ DEBUG=true make dev
 
 ## 🤝 Contributing
 
-### Setting Up Repository for CI/CD
+### Setting Up Repository for CI
 
-Before the CI/CD pipeline can run successfully, ensure the following repository secrets are configured:
+Before the CI pipeline can run successfully, ensure the following repository secrets are configured:
 
 1. **GitHub Secrets** (Repository Settings → Secrets and variables → Actions):
    ```
    CODECOV_TOKEN        # Optional: For coverage reporting
    ```
 
-2. **GitHub Container Registry**: 
-   - The workflow automatically uses `GITHUB_TOKEN` for pushing Docker images
-   - No additional setup required for GHCR access
+2. **Container Registry**: 
+   - Currently, the workflow builds Docker images locally for testing
+   - Registry publishing can be added if needed
 
 ### Development Workflow
 
@@ -404,7 +408,7 @@ Before the CI/CD pipeline can run successfully, ensure the following repository 
    make format          # Code formatting
    make type-check      # Type checking
    ```
-5. Ensure Docker build works: `make docker-build && make docker-run`
+5. Ensure Docker build works: `make docker-build && make test-docker-build`
 6. Commit your changes: `git commit -am 'Add feature'`
 7. Push to the branch: `git push origin feature-name`
 8. Submit a pull request
@@ -417,16 +421,15 @@ Before the CI/CD pipeline can run successfully, ensure the following repository 
 - Include tests for new functionality
 - Update documentation if needed
 
-The CI/CD pipeline will automatically:
+The CI pipeline will automatically:
 - Run all tests across Python versions 3.9-3.12
 - Check code quality and formatting
 - Build and test Docker images
-- Deploy to staging (on `develop` branch)
-- Deploy to production (on `main` branch)
+- Generate comprehensive coverage reports
 
-## 🔄 CI/CD Architecture
+## 🔄 CI Architecture
 
-This project implements a modern CI/CD pipeline using GitHub Actions that leverages the comprehensive Makefile commands:
+This project implements a modern CI pipeline using GitHub Actions that leverages the comprehensive Makefile commands:
 
 ### Pipeline Stages
 
@@ -447,27 +450,20 @@ This project implements a modern CI/CD pipeline using GitHub Actions that levera
 
 4. **Containerization Phase**
    - Docker image building with git commit SHA tagging
-   - Multi-registry publishing (GitHub Container Registry)
    - Container health testing and validation
-
-5. **Deployment Phase**
-   - Staging deployment on `develop` branch pushes
-   - Production deployment on `main` branch pushes
-   - Environment-specific configuration management
 
 ### Key Features
 
 - ✅ **Multi-version Testing**: Ensures compatibility across Python 3.9-3.12
-- � **Container-first Approach**: Docker images built and tested automatically
+- 🐳 **Container-first Approach**: Docker images built and tested automatically
 - 📊 **Coverage Tracking**: Integrated with Codecov for coverage monitoring
-- � **Quality Gates**: Enforced linting, formatting, and type checking
-- 🚀 **Automated Deployment**: Environment-specific deployments
-- ⚡ **Performance Monitoring**: Scheduled performance testing
+- 🔍 **Quality Gates**: Enforced linting, formatting, and type checking
+- ⚡ **Performance Monitoring**: Scheduled performance testing with Locust
 - 🏷️ **Smart Tagging**: Git SHA-based container tagging
 
 ### Makefile Integration
 
-The CI/CD pipeline extensively uses Makefile commands to ensure consistency between local development and automated testing:
+The CI pipeline extensively uses Makefile commands to ensure consistency between local development and automated testing:
 
 ```bash
 # Core testing commands used in CI
@@ -484,11 +480,12 @@ make type-check     # Type checking
 
 # Docker operations
 make docker-build   # Container building
+make test-docker-build # Container testing with health checks
 make docker-run     # Container deployment
 make docker-stop    # Container cleanup
 ```
 
-This approach ensures that developers can run the exact same commands locally as those used in the CI/CD pipeline, providing consistency and reliability across all environments.
+This approach ensures that developers can run the exact same commands locally as those used in the CI pipeline, providing consistency and reliability across all environments.
 
 ## 📄 License
 
