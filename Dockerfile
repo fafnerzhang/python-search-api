@@ -24,6 +24,7 @@ EXPOSE 9410
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
+ENV PORT=9410
 
 # Command to run the API using Makefile (production start)
 CMD ["make", "start"]
