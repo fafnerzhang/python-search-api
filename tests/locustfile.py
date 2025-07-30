@@ -9,7 +9,7 @@ import json
 
 class SearchAPIUser(HttpUser):
     wait_time = between(1, 3)
-    
+
     def on_start(self):
         """Setup method called before any task is executed."""
         # Check if the API is healthy before starting tests

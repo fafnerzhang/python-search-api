@@ -9,7 +9,6 @@ from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch
 
 # 添加src目錄到Python路徑
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -42,28 +41,19 @@ def app():
 @pytest.fixture
 def auth_app():
     """Create a test FastAPI application with real authentication for auth tests."""
+    from unittest.mock import patch
     from src.app import create_app
-    import os
+    from src.core.config import Settings
 
-    # Set the API_TOKEN environment variable for tests
-    original_token = os.environ.get("API_TOKEN")
-    os.environ["API_TOKEN"] = "test-token"
+    # Create a test settings instance with the token
+    test_settings = Settings()
+    test_settings.API_TOKEN = "test-token"
 
-    try:
-        # Reload settings to pick up the new environment variable
-        from src.core.config import Settings
-        test_settings = Settings()
-
-        # Patch the settings module with our test settings
-        with patch("src.core.config.settings", test_settings):
-            app = create_app()
-            yield app
-    finally:
-        # Restore original environment
-        if original_token is not None:
-            os.environ["API_TOKEN"] = original_token
-        elif "API_TOKEN" in os.environ:
-            del os.environ["API_TOKEN"]
+    # Patch the settings in all relevant modules
+    with patch("src.core.config.settings", test_settings), \
+         patch("src.services.auth_service.settings", test_settings):
+        app = create_app()
+        yield app
 
 
 @pytest.fixture
