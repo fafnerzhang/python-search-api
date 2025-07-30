@@ -50,8 +50,9 @@ def auth_app():
     test_settings.API_TOKEN = "test-token"
 
     # Patch the settings in all relevant modules
-    with patch("src.core.config.settings", test_settings), \
-         patch("src.services.auth_service.settings", test_settings):
+    with patch("src.core.config.settings", test_settings), patch(
+        "src.services.auth_service.settings", test_settings
+    ):
         app = create_app()
         yield app
 

@@ -34,40 +34,32 @@ class SearchAPIUser(HttpUser):
             "query": "Python programming",
             "region": "us-en",
             "safesearch": "moderate",
-            "max_results": 5
+            "max_results": 5,
         }
         self.client.post(
             "/search",
             data=json.dumps(search_data),
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
 
     @task(1)
     def test_image_search(self):
         """Test image search endpoint."""
-        search_data = {
-            "query": "python logo",
-            "size": "Medium",
-            "max_results": 3
-        }
+        search_data = {"query": "python logo", "size": "Medium", "max_results": 3}
         self.client.post(
             "/search/images",
             data=json.dumps(search_data),
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
 
     @task(1)
     def test_news_search(self):
         """Test news search endpoint."""
-        search_data = {
-            "query": "technology news",
-            "time_limit": "d",
-            "max_results": 3
-        }
+        search_data = {"query": "technology news", "time_limit": "d", "max_results": 3}
         self.client.post(
             "/search/news",
             data=json.dumps(search_data),
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
 
     @task(1)
